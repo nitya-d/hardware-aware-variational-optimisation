@@ -20,7 +20,7 @@ def cost_function(params, ansatz, hamiltonian, estimator):
     return energy
 
 
-def run_vqe(ansatz, hamiltonian, optimizer_name="COBYLA", maxiter=200):
+def run_vqe(ansatz, hamiltonian, optimizer_name="COBYLA", maxiter=200, estimator=None):
     """Run VQE with a given optimizer.
     
     Args:
@@ -28,11 +28,14 @@ def run_vqe(ansatz, hamiltonian, optimizer_name="COBYLA", maxiter=200):
         hamiltonian: SparsePauliOp from build_h2_hamiltonian().
         optimizer_name: Which classical optimizer ("COBYLA", "SPSA", "L-BFGS-B").
         maxiter: Max optimizer iterations.
+        estimator: Qiskit Estimator to use. If None, uses ideal StatevectorEstimator.
+                   Pass a noisy estimator from noise.py to simulate hardware.
         
     Returns:
         result: dict with final energy, optimal params, and convergence history.
     """
-    estimator = StatevectorEstimator()
+    if estimator is None:
+        estimator = StatevectorEstimator()
     
     # Track energy at each step (for plotting convergence later)
     history = []
