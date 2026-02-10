@@ -1,5 +1,7 @@
 # Hardware-Aware Variational Optimisation
 
+**TLDR**: Benchmarked classical VQE optimizers under realistic noise and showed that convergence is noise-limited; motivated and designed a learned, hardware-aware optimizer to improve robustness on NISQ devices. The contribution of this project is not proposing a new quantum algorithm, but systematically analysing optimizer behaviour under noise and framing learned optimisation as a hardware-aware control problem.
+
 ## Table of Contents
 
 - [Hardware-Aware Variational Optimisation](#hardware-aware-variational-optimisation)
