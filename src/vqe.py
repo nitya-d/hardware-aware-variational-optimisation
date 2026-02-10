@@ -1,6 +1,8 @@
 from qiskit.primitives import StatevectorEstimator
 import numpy as np
-from scipy.optimize import minimize
+from optimisers import get_optimizer
+from hamiltonian import build_h2_hamiltonian
+from ansatz import build_ansatz
 
 def cost_function(params, ansatz, hamiltonian, estimator):
     """Compute ⟨ψ(θ)|H|ψ(θ)⟩ — the expected energy for given parameters.
@@ -44,26 +46,14 @@ def run_vqe(ansatz, hamiltonian, optimizer_name="COBYLA", maxiter=200):
     initial_params = np.random.uniform(-np.pi, np.pi, ansatz.num_parameters)
     
     # Run the optimizer
-    opt_result = minimize(
-        objective,
-        initial_params,
-        method=optimizer_name,
-        options={"maxiter": maxiter},
-    )
-    
-    return {
-        "optimal_energy": opt_result.fun,
-        "optimal_params": opt_result.x,
-        "history": history,
-        "num_evals": len(history),
-        "optimizer": optimizer_name,
-    }
+    # Use the optimizer module instead of inline scipy
+    optimizer = get_optimizer(optimizer_name)
+    result = optimizer(objective, initial_params, maxiter)
+
+    return result
     
     
 if __name__ == "__main__":
-    from hamiltonian import build_h2_hamiltonian
-    from ansatz import build_ansatz
-
     # Step 1: Build problem
     hamiltonian, exact_energy = build_h2_hamiltonian()
     ansatz = build_ansatz(num_qubits=hamiltonian.num_qubits, reps=2)
