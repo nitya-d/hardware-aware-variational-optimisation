@@ -15,9 +15,9 @@ from qiskit.quantum_info import SparsePauliOp
 def build_h2_hamiltonian(bond_length: float = 0.735):
     """Build the H₂ qubit Hamiltonian.
 
-    Pre-computed from STO-3G basis via Jordan-Wigner mapping.
-    Jordan-Wigner is the simplest mapping: one qubit per electron orbital.
-    For H₂ with STO-3G this gives 4 qubits.
+    Pre-computed from STO-3G basis via parity mapping with two-qubit reduction.
+    This gives a 2-qubit Hamiltonian where the smallest eigenvalue directly
+    equals the physical ground state energy (~-1.137 Ha).
 
     Args:
         bond_length: Distance between H atoms in Angstroms.
@@ -40,25 +40,20 @@ def build_h2_hamiltonian(bond_length: float = 0.735):
             "Only 0.735 Å (equilibrium) is hardcoded."
         )
 
-    # Each tuple is (Pauli string, coefficient).
-    # Pauli string is read right-to-left: "IZII" means Z on qubit 2.
-    # These encode the electron-electron and electron-nucleus interactions.
+    # 2-qubit H₂ Hamiltonian (parity mapping with two-qubit reduction).
+    # This is the standard form used in VQE tutorials.
+    # Nuclear repulsion energy (0.7200 Ha) is folded into the II term
+    # so that the smallest eigenvalue directly equals the total ground state energy.
+    #
+    # With 4 qubits (Jordan-Wigner), some eigenvalues are unphysical
+    # (wrong electron count). The 2-qubit reduced form avoids this —
+    # the smallest eigenvalue IS the physical ground state.
     qubit_op = SparsePauliOp.from_list([
-        ("IIII", -0.8105479805373266),
-        ("IIIZ",  0.17218393261915552),
-        ("IIZI", -0.22575349222402472),
-        ("IZII",  0.17218393261915552),
-        ("ZIII", -0.22575349222402472),
-        ("IIZZ",  0.12091263261776641),
-        ("IZIZ",  0.16892753870087912),
-        ("IZZI",  0.04523279994605785),
-        ("ZIIZ",  0.04523279994605785),
-        ("ZIZI",  0.16892753870087912),
-        ("ZZII",  0.17464343068300453),
-        ("XXYY", -0.04523279994605785),
-        ("XYYX",  0.04523279994605785),
-        ("YXXY",  0.04523279994605785),
-        ("YYXX", -0.04523279994605785),
+        ("II", -0.33240425132388),    # electronic energy + nuclear repulsion
+        ("IZ",  0.39793742484318),
+        ("ZI", -0.39793742484318),
+        ("ZZ", -0.01128010425624),
+        ("XX",  0.18093119978423),
     ])
 
     # Exact ground state energy (classically computed eigenvalue)
