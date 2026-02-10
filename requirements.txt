@@ -1,0 +1,22 @@
+# Core quantum
+qiskit>=1.0
+qiskit-aer>=0.13
+qiskit-ibm-runtime>=0.20
+qiskit-nature>=0.7
+qiskit-optimization>=0.6
+pyscf
+
+# Classical scientific computing
+numpy
+scipy
+matplotlib
+
+# ML (for Phase 2 - ML optimizer)
+torch
+
+# Jupyter
+jupyter
+ipykernel
+
+# Testing
+pytest
