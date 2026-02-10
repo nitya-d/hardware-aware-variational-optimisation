@@ -1,6 +1,6 @@
 # Learning Notes
 
-Notes on quantum computing concepts learned while building this project. Written from the perspective of an ML/SWE engineer — heavy on analogies to classical ML.
+Notes on quantum computing concepts encountered while building this project. Written from the perspective of an ML/SWE engineer — heavy on analogies to classical ML.
 
 ## Table of Contents
 
@@ -15,19 +15,19 @@ Notes on quantum computing concepts learned while building this project. Written
 
 ## Hamiltonians
 
-A Hamiltonian is a matrix that encodes the "energy" of a system. Its smallest eigenvalue = the system's ground state energy (lowest possible energy), and the corresponding eigenvector = the state that achieves it.
+A Hamiltonian is a matrix that encodes the "energy" of a system. Its smallest eigenvalue is the system's ground state energy (lowest possible energy), and the corresponding eigenvector is the state that achieves it.
 
-Think of it like a **loss function**, but expressed as a matrix. The "best solution" to whatever problem you're encoding is the eigenvector with the smallest eigenvalue.
+Think of it like a **loss function**, but expressed as a matrix. The "best solution" to whatever problem is being encoded is the eigenvector with the smallest eigenvalue.
 
-**Scale:** For n qubits, the Hamiltonian is a 2ⁿ×2ⁿ matrix. 10 qubits → 1024×1024. 50 qubits → ~10¹⁵ entries. That's why you can't just do `numpy.linalg.eigh()` at scale — it's exponentially large.
+**Scale:** For n qubits, the Hamiltonian is a 2ⁿ×2ⁿ matrix. 10 qubits → 1024×1024. 50 qubits → ~10¹⁵ entries. This is why `numpy.linalg.eigh()` is infeasible at scale — the matrix is exponentially large.
 
-**The key insight:** Many useful problems can be rephrased as "find the smallest eigenvalue of this matrix." The matrix is constructed from the problem's rules/constraints.
+**The key insight:** Many useful problems can be rephrased as "find the smallest eigenvalue of this matrix." The matrix is constructed from the problem's rules and constraints.
 
 ### Where do Hamiltonians come from?
 
-**Molecules (chemistry):** Physics tells you the rules. Electrons interact via Coulomb forces. You write down the interactions mathematically, discretize them into qubit operators using transformations (Jordan-Wigner, Bravyi-Kitaev). Libraries like Qiskit Nature do this for you — you say "give me H₂ with bond length 0.735 Å" and it spits out the Hamiltonian matrix.
+**Molecules (chemistry):** Physics dictates the rules. Electrons interact via Coulomb forces. These interactions are written down mathematically, then discretized into qubit operators using transformations (Jordan-Wigner, Bravyi-Kitaev). Libraries like Qiskit Nature handle this automatically — specify "H₂ with bond length 0.735 Å" and it produces the Hamiltonian matrix.
 
-> **Mental model:** A Hamiltonian is to quantum computing what a loss function is to ML — the thing you're minimizing. It happens to be expressed as a matrix because quantum mechanics operates on vectors and matrices (linear algebra). The word "energy" is physicist baggage; in CS terms, it's just "cost."
+> **Mental model:** A Hamiltonian is to quantum computing what a loss function is to ML — the thing being minimised. It happens to be expressed as a matrix because quantum mechanics operates on vectors and matrices (linear algebra). The word "energy" is physicist baggage; in CS terms, it's just "cost."
 
 ---
 
@@ -47,7 +47,7 @@ VQE is gradient descent on a quantum circuit. Direct analogy to ML training:
 **The loop:**
 1. Build a **parameterized circuit** (ansatz) — rotation gates Ry(θ₁), Rz(θ₂), etc. Think: model architecture.
 2. Run the circuit, measure output.
-3. Compute expected energy ⟨ψ(θ)\|H\|ψ(θ)⟩ — this is your loss.
+3. Compute expected energy ⟨ψ(θ)\|H\|ψ(θ)⟩ — this is the loss.
 4. Classical optimizer updates θ to lower the energy.
 5. Repeat until converged.
 
@@ -55,16 +55,16 @@ VQE is gradient descent on a quantum circuit. Direct analogy to ML training:
 
 ### Expectation value ⟨ψ(θ)|H|ψ(θ)⟩
 
-The expected energy of the state your circuit produces:
-- |ψ(θ)⟩ = the quantum state your circuit outputs for angles θ
+The expected energy of the state the circuit produces:
+- |ψ(θ)⟩ = the quantum state the circuit outputs for angles θ
 - H = the Hamiltonian matrix
 - ⟨ψ(θ)| = conjugate transpose of |ψ(θ)⟩
 
-In NumPy: `state.conj().T @ H_matrix @ state` → one scalar (the energy). It's a weighted average of H's eigenvalues. If your state matches the ground state eigenvector, you get the smallest eigenvalue. VQE adjusts θ until this number is minimised.
+In NumPy: `state.conj().T @ H_matrix @ state` → one scalar (the energy). It's a weighted average of H's eigenvalues. If the state matches the ground state eigenvector, the result is the smallest eigenvalue. VQE adjusts θ until this number is minimised.
 
 ### Why "variational"?
 
-The **variational principle** states: for any state |ψ⟩, ⟨ψ|H|ψ⟩ ≥ true ground state energy. You can never undershoot. So "lower = closer to truth" is mathematically guaranteed. VQE *varies* the parameters θ to find the lowest energy, approaching the ground state from above.
+The **variational principle** states: for any state |ψ⟩, ⟨ψ|H|ψ⟩ ≥ true ground state energy. It is impossible to undershoot. So "lower = closer to truth" is mathematically guaranteed. VQE *varies* the parameters θ to find the lowest energy, approaching the ground state from above.
 
 ---
 
@@ -75,7 +75,7 @@ QAOA is a special case of VQE for **combinatorial optimization** (MaxCut, schedu
 - Only 2p parameters (p = number of layers)
 - Problem must already be expressed as a Hamiltonian (cost function → Pauli operators)
 
-VQE = general purpose, you choose the ansatz. QAOA = structured ansatz designed for optimization problems.
+VQE = general purpose, the ansatz is a design choice. QAOA = structured ansatz designed specifically for optimization problems.
 
 ---
 
@@ -100,18 +100,18 @@ Different optimizers compute the update direction g differently:
 | Finite differences / parameter shift | 24 |
 | SPSA | 2 |
 
-SPSA is rarely used in classical ML because backprop gives exact gradients for free. On quantum hardware, there is no backprop — you must estimate gradients by running circuits.
+SPSA is rarely used in classical ML because backprop gives exact gradients for free. On quantum hardware, there is no backprop — gradients must be estimated by running circuits.
 
 ### Two levels of optimization in this project
 
-1. **Inner loop (VQE itself):** Minimize energy of H₂ → find ground state. Standard task.
-2. **Outer loop (our contribution):** Optimize the *optimizer*. Train an ML model that produces better parameter updates than COBYLA/SPSA/Adam, especially under hardware noise.
+1. **Inner loop (VQE itself):** Minimise energy of H₂ → find ground state. Standard task.
+2. **Outer loop (the project's contribution):** Optimise the *optimizer*. Train an ML model that produces better parameter updates than COBYLA/SPSA/Adam, especially under hardware noise.
 
 ---
 
 ## Benchmarking Strategy
 
-We're comparing **optimizers**, not quantum vs classical computing. The question: *"Can a learned optimizer navigate the noisy VQE landscape better than hand-designed ones?"*
+The comparison is between **optimizers**, not quantum vs classical computing. The question: *"Can a learned optimizer navigate the noisy VQE landscape better than hand-designed ones?"*
 
 ### Metrics
 
@@ -130,19 +130,19 @@ We're comparing **optimizers**, not quantum vs classical computing. The question
 | **Noisy simulator** (calibration data) | Realistic test — does the optimizer handle noise? |
 | **Real IBM hardware** | Ground truth — does it actually work? |
 
-For each environment, run all optimizers, plot convergence curves, compare final energies.
+For each environment, all optimizers are run, convergence curves are plotted, and final energies are compared.
 
 ### The big picture
 
 ```
 Known answer (exact eigenvalue of H₂)
          ↑
-         |  How close do we get?
+         |  How close does it get?
          |
     [VQE loop]
     circuit(θ) → measure → energy → optimizer → new θ → repeat
          |                              ↑
-         |                   COBYLA? SPSA? Adam? OUR ML MODEL?
+         |                   COBYLA? SPSA? Adam? ML MODEL?
          |
     [Run on what?]
     ideal sim │ noisy sim │ real hardware
@@ -162,9 +162,9 @@ The ansatz is the **parameterized quantum circuit** — the model architecture o
 | Too small → underfits | Too shallow → can't reach ground state |
 | Too big → overfits / hard to train | Too deep → barren plateaus / noise kills it |
 
-### Why do we need it?
+### Why is it needed?
 
-The ansatz restricts the search to a family of states parameterized by a few angles θ. It's like choosing an MLP architecture — you're not searching all possible functions, just those representable by your chosen model.
+The ansatz restricts the search to a family of states parameterised by a few angles θ. It's analogous to choosing an MLP architecture — the search is not over all possible functions, just those representable by the chosen model.
 
 ### Structure: Rotation + Entanglement
 
@@ -182,17 +182,17 @@ q3:  │ Ry(θ₃)   │──⊕──│ Ry(θ₇)   │──⊕──
 ```
 
 - **Ry(θ)** = rotation gate. The tunable knob.
-- **CNOT (■──⊕)** = entanglement. Without it, qubits are independent and can't represent correlated states (e.g. electron correlations in molecules).
+- **CNOT (■──⊕)** = entanglement. Without it, qubits are independent and cannot represent correlated states (e.g. electron correlations in molecules).
 
 ### Why entanglement matters
 
-Without CNOTs, each qubit is independent — like assuming all features are uncorrelated. Real molecules have electron correlations, so the quantum state must be entangled. No entanglement → VQE literally cannot represent the H₂ ground state.
+Without CNOTs, each qubit is independent — like assuming all features are uncorrelated. Real molecules have electron correlations, so the quantum state must be entangled. Without entanglement, VQE literally cannot represent the H₂ ground state.
 
 ### Common ansatz templates
 
 | Template | Gates | Notes |
 |---|---|---|
-| **RealAmplitudes** | Ry + CNOTs | Simple, good for chemistry. What we use. |
+| **RealAmplitudes** | Ry + CNOTs | Simple, good for chemistry. Used in this project. |
 | **EfficientSU2** | Ry + Rz + CNOTs | More expressive. |
 | **UCCSD** | Physics-inspired | Very accurate but very deep circuits. |
 | **HardwareEfficient** | Device-native gates | Less noise on real hardware. |
@@ -208,8 +208,8 @@ This is the core tension of the project:
 | Expressiveness | May miss ground state | More likely to reach it |
 | Gradients | Clear signal | Risk of barren plateaus |
 
-On noisy hardware, fewer params can actually be *better*. The ML optimizer will learn to navigate this tradeoff.
+On noisy hardware, fewer parameters can actually be *better*. The ML optimizer should learn to navigate this tradeoff.
 
 ### Why H₂?
 
-H₂ is our MNIST — we know the answer, so we can precisely measure optimizer quality. For larger molecules, classical computation is exponentially hard and VQE is genuinely needed. Verification then relies on the variational principle (VQE ≥ true energy), classical approximations, and experimental data.
+H₂ serves as the MNIST of quantum chemistry — the answer is known, so optimizer quality can be measured precisely. For larger molecules, classical computation is exponentially hard and VQE is genuinely needed. Verification then relies on the variational principle (VQE ≥ true energy), classical approximations, and experimental data.
