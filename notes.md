@@ -27,7 +27,7 @@ Think of it like a **loss function**, but expressed as a matrix. The "best solut
 
 **Molecules (chemistry):** Physics dictates the rules. Electrons interact via Coulomb forces. These interactions are written down mathematically, then discretized into qubit operators using transformations (Jordan-Wigner, Bravyi-Kitaev). Libraries like Qiskit Nature handle this automatically — specify "H₂ with bond length 0.735 Å" and it produces the Hamiltonian matrix.
 
-> **Mental model:** A Hamiltonian is to quantum computing what a loss function is to ML — the thing being minimised. It happens to be expressed as a matrix because quantum mechanics operates on vectors and matrices (linear algebra). The word "energy" is physicist baggage; in CS terms, it's just "cost."
+**Mental model:** A Hamiltonian is to quantum computing what a loss function is to ML — the thing being minimised. It happens to be expressed as a matrix because quantum mechanics operates on vectors and matrices (linear algebra). The word "energy" is physicist speak; in CS terms, it's just "cost."
 
 ---
 
