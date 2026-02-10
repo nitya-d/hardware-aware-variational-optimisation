@@ -33,7 +33,8 @@ def run_scipy_optimizer(objective, initial_params, method="COBYLA", maxiter=200)
         "optimizer": method,
     } 
 
-def run_spsa(objective, initial_params, maxiter=200, lr=0.1, perturb=0.1):
+def run_spsa(objective, initial_params, maxiter=200, lr=0.5, perturb=0.2,
+             lr_power=0.602, perturb_power=0.101, stability=10):
     """Simultaneous Perturbation Stochastic Approximation.
 
     Why SPSA matters for quantum:
@@ -46,16 +47,24 @@ def run_spsa(objective, initial_params, maxiter=200, lr=0.1, perturb=0.1):
         objective: Cost function f(params) -> energy.
         initial_params: Starting parameter values.
         maxiter: Number of optimization steps.
-        lr: Learning rate (step size). Decays over iterations.
-        perturb: Perturbation size for gradient estimate. Also decays.
+        lr: Initial learning rate (step size). Decays over iterations.
+        perturb: Initial perturbation size for gradient estimate. Also decays.
+        lr_power: Exponent for learning rate decay (standard: 0.602).
+        perturb_power: Exponent for perturbation decay (standard: 0.101).
+        stability: Stability constant added to iteration counter.
+            Prevents early steps from having huge learning rates.
+            Higher = more conservative start. Standard SPSA uses ~10.
     """
     params = initial_params.copy()
     history = []
+    best_energy = float("inf")
+    best_params = params.copy()
 
     for k in range(maxiter):
         # Decay learning rate and perturbation (standard SPSA schedule)
-        ak = lr / (k + 1) ** 0.602
-        ck = perturb / (k + 1) ** 0.101
+        # stability constant prevents division by small numbers early on
+        ak = lr / (k + 1 + stability) ** lr_power
+        ck = perturb / (k + 1) ** perturb_power
 
         # Random perturbation direction (±1 for each parameter)
         delta = np.random.choice([-1, 1], size=len(params))
@@ -70,15 +79,21 @@ def run_spsa(objective, initial_params, maxiter=200, lr=0.1, perturb=0.1):
         # Update parameters
         params = params - ak * gradient
 
-        # Track the current energy
-        current_energy = objective(params)
-        history.append(current_energy)
+        # Track the current energy (use f_plus as cheap estimate
+        # to avoid a 3rd evaluation per step)
+        avg_energy = (f_plus + f_minus) / 2
+        history.append(avg_energy)
+
+        # Track best seen so far (SPSA is noisy, keep the best)
+        if avg_energy < best_energy:
+            best_energy = avg_energy
+            best_params = params.copy()
 
     return {
-        "optimal_energy": history[-1],
-        "optimal_params": params,
+        "optimal_energy": best_energy,
+        "optimal_params": best_params,
         "history": history,
-        "num_evals": maxiter * 3,  # 3 evaluations per step (plus, minus, current)
+        "num_evals": maxiter * 2,  # 2 evaluations per step (plus, minus)
         "optimizer": "SPSA",
     }
 

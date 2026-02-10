@@ -81,10 +81,13 @@ def run_benchmark(
                     )
                     ansatz = ansatz_decomposed
 
+                # SPSA needs more iterations than COBYLA to converge
+                iters = maxiter * 3 if opt_name == "SPSA" else maxiter
+
                 result = run_vqe(
                     ansatz, hamiltonian,
                     optimizer_name=opt_name,
-                    maxiter=maxiter,
+                    maxiter=iters,
                     estimator=estimator,
                 )
                 error = abs(result["optimal_energy"] - exact_energy)
