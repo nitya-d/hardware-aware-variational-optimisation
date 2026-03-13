@@ -1,8 +1,10 @@
+import sys
+sys.path.insert(0, ".")
 from qiskit.primitives import StatevectorEstimator
 import numpy as np
-from optimisers import get_optimizer
-from hamiltonian import build_h2_hamiltonian
-from ansatz import build_ansatz
+from src.optimisers import get_optimizer
+from src.hamiltonian import build_h2_hamiltonian
+from src.ansatz import build_ansatz
 
 def cost_function(params, ansatz, hamiltonian, estimator):
     """Compute ⟨ψ(θ)|H|ψ(θ)⟩ — the expected energy for given parameters.
