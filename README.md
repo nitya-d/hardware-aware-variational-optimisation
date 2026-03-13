@@ -1,5 +1,8 @@
 # Hardware-Aware Variational Optimisation
 
+[![CI](https://github.com/nitya-d/hardware-aware-variational-optimisation/actions/workflows/ci.yml/badge.svg)](https://github.com/nitya-d/hardware-aware-variational-optimisation/actions/workflows/ci.yml)
+![Python 3.11](https://img.shields.io/badge/python-3.11-blue)
+
 **TLDR**: Benchmarked classical VQE optimisers (COBYLA, SPSA) under realistic noise and showed that convergence is noise-limited rather than optimiser-limited. Now building a learned optimiser trained on those trajectories, with the goal of conditioning it on hardware noise metrics to improve robustness on NISQ devices.
 
 ## Table of Contents
@@ -21,13 +24,9 @@
 
 ## Overview
 
-Variational quantum algorithms like VQE (Variational Quantum Eigensolver) are among the most promising applications of near-term quantum computers. They work by iteratively tuning the parameters of a quantum circuit to minimise a cost function — conceptually identical to training a neural network, but with quantum circuits instead of layers of neurons and energy instead of loss.
+VQE iteratively tunes the parameters of a quantum circuit to minimise a cost function — conceptually identical to training a neural network, but with quantum circuits and energy instead of layers and loss. Standard classical optimisers (COBYLA, SPSA) were not designed for quantum noise, and their performance degrades significantly on real devices.
 
-The problem is that today's quantum hardware is noisy. Every gate operation introduces small errors, and measurements are imprecise. Standard classical optimisers (COBYLA, SPSA) were not designed to handle this kind of noise, and their performance degrades significantly on real devices. This creates a gap between the theoretical promise of variational algorithms and what they can actually achieve in practice.
-
-This project investigates that gap. It benchmarks classical optimisers across ideal, mildly noisy, and heavily noisy simulation environments to quantify exactly how noise degrades optimiser performance. The ultimate goal is to build a **learned optimiser** — a small ML model (MLP or LSTM) that takes the history of energy evaluations and learns a parameter update rule that is more robust to hardware noise than hand-designed optimisers.
-
-The benchmark problem is the ground state energy of the hydrogen molecule (H₂). This is the "MNIST of quantum computing" — the exact answer is known (-1.137306 Hartree), so optimiser quality can be measured precisely. The system is small enough (2 qubits) to simulate quickly, but the optimisation landscape has all the features that make real variational problems hard: local minima, noisy gradients, and sensitivity to circuit depth.
+The benchmark problem is the ground state energy of the hydrogen molecule (H₂) — the "MNIST of quantum computing". The exact answer is known (-1.137306 Hartree), so optimiser quality can be measured precisely. The system is small enough (2 qubits) to simulate quickly, but the optimisation landscape has all the features that make real variational problems hard: local minima, noisy gradients, and sensitivity to circuit depth.
 
 ## Motivation
 
@@ -39,19 +38,31 @@ The key question this project aims to answer: **can a noise-aware learned optimi
 
 ```
 src/
-├── hamiltonian.py    # H₂ qubit Hamiltonian (2-qubit parity mapping)
-├── ansatz.py         # Parameterised quantum circuits (RealAmplitudes, EfficientSU2)
-├── vqe.py            # VQE optimisation loop
-├── optimisers.py     # Classical optimisers (COBYLA, SPSA, L-BFGS-B, Nelder-Mead)
-├── noise.py          # Noise models and noisy estimator construction
-├── benchmark.py      # Multi-optimiser × multi-seed × multi-environment experiment runner
-└── visualise.py      # Convergence plots and comparison charts
+├── hamiltonian.py      # H₂ qubit Hamiltonian (2-qubit parity mapping)
+├── ansatz.py           # Parameterised quantum circuits (RealAmplitudes, EfficientSU2)
+├── vqe.py              # VQE optimisation loop
+├── optimisers.py       # Classical optimisers (COBYLA, SPSA, L-BFGS-B, Nelder-Mead)
+├── noise.py            # Noise models and noisy estimator construction
+├── benchmark.py        # Multi-optimiser × multi-seed × multi-environment experiment runner
+├── visualise.py        # Convergence plots and comparison charts
+├── data_collection.py  # Phase 2: generate and save COBYLA training trajectories
+└── ml_optimizer.py     # Phase 2: MLP model, training loop, and optimiser wrapper
+tests/
+├── conftest.py         # Shared fixtures
+├── test_hamiltonian.py
+├── test_ansatz.py
+├── test_vqe.py
+├── test_optimisers.py
+└── test_noise.py
 results/
-├── benchmark.json    # Raw benchmark data
-├── convergence.png   # Energy vs iteration plots
+├── benchmark.json      # Raw benchmark data
+├── convergence.png     # Energy vs iteration plots
 ├── final_energy_error.png
 └── eval_count.png
-notes.md              # Learning notes (Hamiltonians, VQE, QAOA, ansatz, optimisers)
+.github/workflows/
+└── ci.yml              # GitHub Actions CI (runs tests on every push)
+requirements-ci.txt     # Minimal dependencies for CI
+notes.md                # Learning notes (Hamiltonians, VQE, QAOA, ansatz, optimisers)
 ```
 
 ## Getting Started
@@ -79,6 +90,11 @@ python src/benchmark.py
 **Generate plots** from benchmark results:
 ```bash
 python src/visualise.py
+```
+
+**Run the test suite:**
+```bash
+pytest tests/ -m "not slow" -v
 ```
 
 ## Noise Simulation
@@ -164,4 +180,5 @@ The project is structured in four phases, each building on the last:
 - [ ] ML optimiser — train MLP/LSTM to predict parameter updates from optimisation trajectory
 - [ ] Condition on noise metrics (gate error rates, circuit depth, shot noise)
 - [ ] Extend to other problems (LiH, MaxCut via QAOA, bond length sweeps)
-- [ ] Production hardening (config files, CLI, logging, CI/CD, Docker)
+- [x] CI — GitHub Actions runs the test suite on every push to main
+- [ ] Production hardening (config files, CLI, logging, Docker)
