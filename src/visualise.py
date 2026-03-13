@@ -1,8 +1,8 @@
-"""Visualization module — load benchmark results and produce plots.
+"""Visualisation module — load benchmark results and produce plots.
 
 Generates:
   1. Convergence curves (energy vs iteration) per environment
-  2. Final energy error bar chart (optimizer × environment)
+  2. Final energy error bar chart (optimiser × environment)
 
 Saves plots to results/ directory.
 """
@@ -21,12 +21,12 @@ def load_results(path="results/benchmark.json"):
 
 
 def plot_convergence(results, save_dir="results"):
-    """Plot convergence curves: energy vs iteration for each optimizer.
+    """Plot convergence curves: energy vs iteration for each optimiser.
 
-    One subplot per environment. Each optimizer gets its own colour.
+    One subplot per environment. Each optimiser gets its own colour.
     Multiple seeds are shown as thin lines with the mean as a thick line.
     """
-    # Get unique environments and optimizers
+    # Get unique environments and optimisers
     environments = sorted(set(r["environment"] for r in results))
     optimizers = sorted(set(r["optimizer"] for r in results))
     colours = plt.cm.tab10(np.linspace(0, 1, len(optimizers)))
@@ -46,7 +46,7 @@ def plot_convergence(results, save_dir="results"):
                     linewidth=1, label=f"Exact ({exact_energy:.4f})")
 
         for opt, colour in zip(optimizers, colours):
-            # Get all runs for this optimizer + environment
+            # Get all runs for this optimiser + environment
             runs = [r for r in results
                     if r["optimizer"] == opt and r["environment"] == env]
 
@@ -72,7 +72,7 @@ def plot_convergence(results, save_dir="results"):
         ax.legend(fontsize=9)
         ax.grid(True, alpha=0.3)
 
-    fig.suptitle("VQE Convergence: Optimizer × Environment", fontsize=14, fontweight="bold")
+    fig.suptitle("VQE Convergence: Optimiser × Environment", fontsize=14, fontweight="bold")
     plt.tight_layout()
     save_path = f"{save_dir}/convergence.png"
     plt.savefig(save_path, dpi=150, bbox_inches="tight")
@@ -81,9 +81,9 @@ def plot_convergence(results, save_dir="results"):
 
 
 def plot_final_energy(results, save_dir="results"):
-    """Bar chart of final energy error by optimizer × environment.
+    """Bar chart of final energy error by optimiser × environment.
 
-    Each group of bars = one environment. Each bar = one optimizer.
+    Each group of bars = one environment. Each bar = one optimiser.
     Error bars show std across seeds.
     """
     environments = sorted(set(r["environment"] for r in results))
@@ -111,7 +111,7 @@ def plot_final_energy(results, save_dir="results"):
 
     ax.set_xlabel("Environment", fontsize=12)
     ax.set_ylabel("Energy Error |E_vqe - E_exact| (Ha)", fontsize=12)
-    ax.set_title("Final Energy Error: Optimizer × Environment", fontsize=14, fontweight="bold")
+    ax.set_title("Final Energy Error: Optimiser × Environment", fontsize=14, fontweight="bold")
     ax.set_xticks(x)
     ax.set_xticklabels(environments)
     ax.legend()
@@ -125,7 +125,7 @@ def plot_final_energy(results, save_dir="results"):
 
 
 def plot_eval_count(results, save_dir="results"):
-    """Bar chart of circuit evaluations by optimizer × environment.
+    """Bar chart of circuit evaluations by optimiser × environment.
 
     Shows computational cost — fewer evals = cheaper on real hardware.
     """
@@ -154,7 +154,7 @@ def plot_eval_count(results, save_dir="results"):
 
     ax.set_xlabel("Environment", fontsize=12)
     ax.set_ylabel("Circuit Evaluations", fontsize=12)
-    ax.set_title("Computational Cost: Optimizer × Environment", fontsize=14, fontweight="bold")
+    ax.set_title("Computational Cost: Optimiser × Environment", fontsize=14, fontweight="bold")
     ax.set_xticks(x)
     ax.set_xticklabels(environments)
     ax.legend()

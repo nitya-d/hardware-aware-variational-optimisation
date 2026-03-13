@@ -1,6 +1,6 @@
-"""Ansatz (parameterized circuit) construction for VQE.
+"""Ansatz (parameterised circuit) construction for VQE.
 
-The ansatz is the quantum circuit whose parameters θ we optimize.
+The ansatz is the quantum circuit whose parameters θ we optimise.
 Think of it as the model architecture — we're choosing the family
 of quantum states VQE can search over.
 """
@@ -14,7 +14,7 @@ def build_ansatz(
     reps: int = 2,
     ansatz_type: str = "real_amplitudes",
 ) -> QuantumCircuit:
-    """Build a parameterized quantum circuit (ansatz) for VQE.
+    """Build a parameterised quantum circuit (ansatz) for VQE.
 
     Args:
         num_qubits: Number of qubits (must match Hamiltonian).

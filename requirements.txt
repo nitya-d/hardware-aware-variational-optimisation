@@ -11,7 +11,7 @@ numpy
 scipy
 matplotlib
 
-# ML (for Phase 2 - ML optimizer)
+# ML (for Phase 2 - ML optimiser)
 torch
 
 # Jupyter

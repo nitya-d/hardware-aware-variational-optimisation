@@ -1,10 +1,10 @@
-"""Benchmark script — run all optimizers × multiple seeds × noise environments.
+"""Benchmark script — run all optimisers × multiple seeds × noise environments.
 
 This is the experiment runner. It produces the data for your
 convergence plots and comparison tables.
 
 Dimensions:
-  - Optimizers (COBYLA, SPSA, etc.)
+  - Optimisers (COBYLA, SPSA, etc.)
   - Seeds (random initial params)
   - Environments (ideal, noisy_low, noisy_high)
 """
@@ -38,13 +38,13 @@ def run_benchmark(
     shots=1024,
     save_path="results/benchmark.json",
 ):
-    """Run VQE with each optimizer × each seed × each environment.
+    """Run VQE with each optimiser × each seed × each environment.
 
     Args:
-        optimizer_names: Which optimizers to benchmark.
+        optimizer_names: Which optimisers to benchmark.
         seeds: Random seeds for initial parameter reproducibility.
         environments: Which noise environments to test. Keys from ENVIRONMENTS dict.
-        maxiter: Max optimizer iterations per run.
+        maxiter: Max optimiser iterations per run.
         reps: Ansatz repetitions (depth).
         shots: Shot count for noisy estimators.
         save_path: Where to save JSON results.
@@ -124,7 +124,7 @@ def run_benchmark(
     print(f"\nResults saved to {save_path}")
 
     # Print summary table
-    print(f"\n{'Environment':12s} | {'Optimizer':12s} | {'Mean Energy':>12s} | {'Mean Error':>10s} | {'Std Error':>10s} | {'Mean Evals':>10s}")
+    print(f"\n{'Environment':12s} | {'Optimiser':12s} | {'Mean Energy':>12s} | {'Mean Error':>10s} | {'Std Error':>10s} | {'Mean Evals':>10s}")
     print("-" * 85)
     for env_name in environments:
         for opt_name in optimizer_names:

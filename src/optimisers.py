@@ -1,6 +1,6 @@
-"""Classical optimizer wrappers for VQE.
+"""Classical optimiser wrappers for VQE.
 
-Provides a uniform interface so VQE can swap optimizers without
+Provides a uniform interface so VQE can swap optimisers without
 changing any other code. Same idea as using a common API for
 SGD/Adam/AdaGrad in PyTorch.
 """
@@ -10,7 +10,12 @@ from scipy.optimize import minimize
 
 
 def run_scipy_optimizer(objective, initial_params, method="COBYLA", maxiter=200):
-    """Wrap scipy optimizers (COBYLA, L-BFGS-B, Nelder-Mead, etc.)."""
+    """Wrap scipy optimisers (COBYLA, L-BFGS-B, Nelder-Mead, etc.).
+
+    History tracking lives here (not in the caller). The caller passes a plain
+    objective; this wrapper records every evaluation before returning it to scipy.
+    SPSA uses the same pattern — its own internal history list.
+    """
     history = []
 
     def tracked_objective(params):
@@ -31,7 +36,7 @@ def run_scipy_optimizer(objective, initial_params, method="COBYLA", maxiter=200)
         "history": history,
         "num_evals": len(history),
         "optimizer": method,
-    } 
+    }
 
 def run_spsa(objective, initial_params, maxiter=200, lr=0.5, perturb=0.2,
              lr_power=0.602, perturb_power=0.101, stability=10):
@@ -46,7 +51,7 @@ def run_spsa(objective, initial_params, maxiter=200, lr=0.5, perturb=0.2,
     Args:
         objective: Cost function f(params) -> energy.
         initial_params: Starting parameter values.
-        maxiter: Number of optimization steps.
+        maxiter: Number of optimisation steps.
         lr: Initial learning rate (step size). Decays over iterations.
         perturb: Initial perturbation size for gradient estimate. Also decays.
         lr_power: Exponent for learning rate decay (standard: 0.602).
@@ -98,12 +103,12 @@ def run_spsa(objective, initial_params, maxiter=200, lr=0.5, perturb=0.2,
     }
 
 def get_optimizer(name: str):
-    """Get an optimizer function by name.
+    """Get an optimiser function by name.
 
     Returns a function with signature:
-        optimizer(objective, initial_params, maxiter) -> result dict
+        optimiser(objective, initial_params, maxiter) -> result dict
 
-    This lets VQE swap optimizers without changing any other code.
+    This lets VQE swap optimisers without changing any other code.
     """
     optimizers = {
         "COBYLA": lambda obj, p0, m: run_scipy_optimizer(obj, p0, "COBYLA", m),
@@ -113,7 +118,7 @@ def get_optimizer(name: str):
     }
 
     if name not in optimizers:
-        raise ValueError(f"Unknown optimizer: {name}. Available: {list(optimizers.keys())}")
+        raise ValueError(f"Unknown optimiser: {name}. Available: {list(optimizers.keys())}")
 
     return optimizers[name]
 
@@ -136,7 +141,7 @@ if __name__ == "__main__":
 
     initial_params = np.random.uniform(-np.pi, np.pi, ansatz.num_parameters)
 
-    # Run each optimizer- tries different angles to find the lowest energy and tracks convergence
+    # Run each optimiser — tries different angles to find the lowest energy and tracks convergence
     print(f"Exact energy: {exact_energy:.6f} Ha\n")
     for name in ["COBYLA", "SPSA"]:
         opt = get_optimizer(name)

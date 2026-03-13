@@ -6,8 +6,8 @@ Notes on quantum computing concepts encountered while building this project. Wri
 
 - [Hamiltonians](#hamiltonians)
 - [VQE (Variational Quantum Eigensolver)](#vqe-variational-quantum-eigensolver)
-- [QAOA](#qaoa-quantum-approximate-optimization-algorithm)
-- [Optimizers](#optimizers)
+- [QAOA](#qaoa-quantum-approximate-optimisation-algorithm)
+- [Optimisers](#optimisers)
 - [Benchmarking Strategy](#benchmarking-strategy)
 - [Ansatz](#ansatz)
 
@@ -41,14 +41,14 @@ VQE is gradient descent on a quantum circuit. Direct analogy to ML training:
 | Forward pass → prediction | Run circuit → measure quantum state |
 | Loss function | Hamiltonian expectation value ⟨ψ(θ)\|H\|ψ(θ)⟩ (energy) |
 | Backprop → gradients | Parameter shift rule → gradients |
-| Optimizer updates weights | Optimizer updates rotation angles |
+| Optimiser updates weights | Optimiser updates rotation angles |
 | Converges to low loss | Converges to ground state energy |
 
 **The loop:**
-1. Build a **parameterized circuit** (ansatz) — rotation gates Ry(θ₁), Rz(θ₂), etc. Think: model architecture.
+1. Build a **parameterised circuit** (ansatz) — rotation gates Ry(θ₁), Rz(θ₂), etc. Think: model architecture.
 2. Run the circuit, measure output.
 3. Compute expected energy ⟨ψ(θ)\|H\|ψ(θ)⟩ — this is the loss.
-4. Classical optimizer updates θ to lower the energy.
+4. Classical optimiser updates θ to lower the energy.
 5. Repeat until converged.
 
 **Output:** minimum energy (≈ smallest eigenvalue) and the parameters that produce it.
@@ -68,30 +68,30 @@ The **variational principle** states: for any state |ψ⟩, ⟨ψ|H|ψ⟩ ≥ tr
 
 ---
 
-## QAOA (Quantum Approximate Optimization Algorithm)
+## QAOA (Quantum Approximate Optimisation Algorithm)
 
-QAOA is a special case of VQE for **combinatorial optimization** (MaxCut, scheduling, portfolio, etc.):
+QAOA is a special case of VQE for **combinatorial optimisation** (MaxCut, scheduling, portfolio, etc.):
 - Fixed ansatz structure: alternating "problem" and "mixer" layers
 - Only 2p parameters (p = number of layers)
 - Problem must already be expressed as a Hamiltonian (cost function → Pauli operators)
 
-VQE = general purpose, the ansatz is a design choice. QAOA = structured ansatz designed specifically for optimization problems.
+VQE = general purpose, the ansatz is a design choice. QAOA = structured ansatz designed specifically for optimisation problems.
 
 ---
 
-## Optimizers
+## Optimisers
 
 ### Parameter updates
 
 Same as weight updates in ML: **θ(t+1) = θ(t) − η · g(θ(t))**
 
-Different optimizers compute the update direction g differently:
+Different optimisers compute the update direction g differently:
 
-| Optimizer | How it works | Quantum advantage |
+| Optimiser | How it works | Quantum advantage |
 |---|---|---|
 | **COBYLA** | Gradient-free. Builds linear approximation of cost function from function values only. | Popular for VQE — no gradient circuits needed. Can be slow. |
-| **SPSA** | Wiggles *all* parameters simultaneously (±Δ), estimates full gradient from 2 evaluations — regardless of parameter count. | The key quantum optimizer. Designed for noisy functions. |
-| **Adam** | Gradient estimates + momentum + adaptive learning rates. | Standard ML optimizer, less common in quantum. |
+| **SPSA** | Wiggles *all* parameters simultaneously (±Δ), estimates full gradient from 2 evaluations — regardless of parameter count. | The key quantum optimiser. Designed for noisy functions. |
+| **Adam** | Gradient estimates + momentum + adaptive learning rates. | Standard ML optimiser, less common in quantum. |
 
 **SPSA's efficiency advantage:**
 
@@ -102,16 +102,16 @@ Different optimizers compute the update direction g differently:
 
 SPSA is rarely used in classical ML because backprop gives exact gradients for free. On quantum hardware, there is no backprop — gradients must be estimated by running circuits.
 
-### Two levels of optimization in this project
+### Two levels of optimisation in this project
 
 1. **Inner loop (VQE itself):** Minimise energy of H₂ → find ground state. Standard task.
-2. **Outer loop (the project's contribution):** Optimise the *optimizer*. Train an ML model that produces better parameter updates than COBYLA/SPSA/Adam, especially under hardware noise.
+2. **Outer loop (the project's contribution):** Optimise the *optimiser*. Train an ML model that produces better parameter updates than COBYLA/SPSA/Adam, especially under hardware noise.
 
 ---
 
 ## Benchmarking Strategy
 
-The comparison is between **optimizers**, not quantum vs classical computing. The question: *"Can a learned optimizer navigate the noisy VQE landscape better than hand-designed ones?"*
+The comparison is between **optimisers**, not quantum vs classical computing. The question: *"Can a learned optimiser navigate the noisy VQE landscape better than hand-designed ones?"*
 
 ### Metrics
 
@@ -119,7 +119,7 @@ The comparison is between **optimizers**, not quantum vs classical computing. Th
 |---|---|
 | **Final energy** | How close to the true ground state? Lower = better |
 | **Convergence speed** | How many circuit evaluations to get there? Fewer = better (circuits are expensive) |
-| **Robustness to noise** | Does the optimizer still work under realistic hardware noise? |
+| **Robustness to noise** | Does the optimiser still work under realistic hardware noise? |
 | **Stability** | Consistent convergence or wild oscillation? |
 
 ### Environments
@@ -127,10 +127,10 @@ The comparison is between **optimizers**, not quantum vs classical computing. Th
 | Environment | Purpose |
 |---|---|
 | **Ideal simulator** (no noise) | Upper bound — best possible performance |
-| **Noisy simulator** (calibration data) | Realistic test — does the optimizer handle noise? |
+| **Noisy simulator** (calibration data) | Realistic test — does the optimiser handle noise? |
 | **Real IBM hardware** | Ground truth — does it actually work? |
 
-For each environment, all optimizers are run, convergence curves are plotted, and final energies are compared.
+For each environment, all optimisers are run, convergence curves are plotted, and final energies are compared.
 
 ### The big picture
 
@@ -140,7 +140,7 @@ Known answer (exact eigenvalue of H₂)
          |  How close does it get?
          |
     [VQE loop]
-    circuit(θ) → measure → energy → optimizer → new θ → repeat
+    circuit(θ) → measure → energy → optimiser → new θ → repeat
          |                              ↑
          |                   COBYLA? SPSA? Adam? ML MODEL?
          |
@@ -152,7 +152,7 @@ Known answer (exact eigenvalue of H₂)
 
 ## Ansatz
 
-The ansatz is the **parameterized quantum circuit** — the model architecture of VQE.
+The ansatz is the **parameterised quantum circuit** — the model architecture of VQE.
 
 | ML | VQE |
 |---|---|
@@ -203,13 +203,13 @@ This is the core tension of the project:
 
 | | Few parameters | Many parameters |
 |---|---|---|
-| Optimization | Faster | Slower |
+| Optimisation | Faster | Slower |
 | Noise impact | Less (fewer gates) | More (more gates) |
 | Expressiveness | May miss ground state | More likely to reach it |
 | Gradients | Clear signal | Risk of barren plateaus |
 
-On noisy hardware, fewer parameters can actually be *better*. The ML optimizer should learn to navigate this tradeoff.
+On noisy hardware, fewer parameters can actually be *better*. The ML optimiser should learn to navigate this tradeoff.
 
 ### Why H₂?
 
-H₂ serves as the MNIST of quantum chemistry — the answer is known, so optimizer quality can be measured precisely. For larger molecules, classical computation is exponentially hard and VQE is genuinely needed. Verification then relies on the variational principle (VQE ≥ true energy), classical approximations, and experimental data.
+H₂ serves as the MNIST of quantum chemistry — the answer is known, so optimiser quality can be measured precisely. For larger molecules, classical computation is exponentially hard and VQE is genuinely needed. Verification then relies on the variational principle (VQE ≥ true energy), classical approximations, and experimental data.

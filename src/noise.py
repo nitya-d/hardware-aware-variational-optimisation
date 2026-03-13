@@ -1,7 +1,7 @@
 """Noise model construction for simulating real quantum hardware.
 
 Uses Qiskit Aer to add realistic noise to circuit simulation.
-This lets us test optimizer robustness without burning real hardware time.
+This lets us test optimiser robustness without burning real hardware time.
 """
 
 from qiskit_aer import AerSimulator
@@ -94,8 +94,10 @@ def get_noisy_estimator(noise_model=None, shots=1024, seed=None):
 
 
 if __name__ == "__main__":
-    from hamiltonian import build_h2_hamiltonian
-    from ansatz import build_ansatz
+    import sys
+    sys.path.insert(0, ".")
+    from src.hamiltonian import build_h2_hamiltonian
+    from src.ansatz import build_ansatz
     from qiskit import transpile
     import numpy as np
 
